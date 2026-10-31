@@ -17,9 +17,9 @@ services:
         generateValue: true
       - key: CLIENT_URL        # your exact Vercel URL, no trailing slash
         sync: false
-      - key: BREVO_API_KEY     # OTP emails (Render free tier blocks SMTP)
+      - key: MAIL_RELAY_URL    # Apps Script web app URL (see backend/mail-relay/Code.gs); Render free blocks SMTP
         sync: false
-      - key: MAIL_FROM         # sender verified in Brevo, e.g. Expense Tracker <you@gmail.com>
+      - key: MAIL_RELAY_SECRET # same SECRET string you put in Code.gs
         sync: false
       - key: CLOUDINARY_CLOUD_NAME
         sync: false

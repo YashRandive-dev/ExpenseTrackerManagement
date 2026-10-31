@@ -19,35 +19,26 @@ const TITLES = {
   reset: "Reset your password",
 };
 
-// "Name <addr@x.com>" or "addr@x.com" -> { name, email }
-const parseSender = (v = "") => {
-  const m = v.match(/^\s*"?([^"<]*?)"?\s*<([^>]+)>\s*$/);
-  return m ? { name: m[1].trim() || "Expense Tracker", email: m[2].trim() } : { name: "Expense Tracker", email: v.trim() };
-};
-
-// Render's free tier blocks outbound SMTP, so production sends through Brevo's HTTPS API.
-const sendViaBrevo = async ({ to, subject, text, html }) => {
-  const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+// Render's free tier blocks outbound SMTP, so production sends through a Google Apps Script
+// web app (see backend/mail-relay/Code.gs) that mails from your own Gmail over HTTPS.
+const sendViaRelay = async ({ to, subject, text, html }) => {
+  const res = await fetch(process.env.MAIL_RELAY_URL, {
     method: "POST",
-    headers: { "api-key": process.env.BREVO_API_KEY, "content-type": "application/json", accept: "application/json" },
-    body: JSON.stringify({
-      sender: parseSender(process.env.MAIL_FROM || process.env.SMTP_USER),
-      to: [{ email: to }],
-      subject,
-      textContent: text,
-      htmlContent: html,
-    }),
+    headers: { "content-type": "text/plain" }, // text/plain avoids a CORS-style preflight on Apps Script
+    body: JSON.stringify({ secret: process.env.MAIL_RELAY_SECRET, to, subject, text, html }),
+    redirect: "follow",
   });
-  if (!res.ok) throw new Error(`Brevo ${res.status}: ${await res.text()}`);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.ok) throw new Error(`Mail relay failed (${res.status}): ${data.error || "no response"}`);
 };
 
 exports.sendOtpEmail = async (to, code, purpose) => {
-  const t = process.env.BREVO_API_KEY ? null : getTransporter();
+  const t = process.env.MAIL_RELAY_URL ? null : getTransporter();
   const title = TITLES[purpose];
 
-  if (!t && !process.env.BREVO_API_KEY) {
+  if (!t && !process.env.MAIL_RELAY_URL) {
     if (process.env.NODE_ENV === "production") {
-      throw new Error("Email is not configured (set BREVO_API_KEY or SMTP_* env vars)");
+      throw new Error("Email is not configured (set MAIL_RELAY_URL or SMTP_* env vars)");
     }
     // dev fallback: no SMTP configured, print the code to the server console
     console.log(`\n[DEV OTP] ${title} -> ${to}: ${code}\n`);
@@ -66,6 +57,6 @@ exports.sendOtpEmail = async (to, code, purpose) => {
     </div>`,
   };
 
-  if (process.env.BREVO_API_KEY) return sendViaBrevo(message);
+  if (process.env.MAIL_RELAY_URL) return sendViaRelay(message);
   await t.sendMail({ from: process.env.MAIL_FROM || process.env.SMTP_USER, ...message });
 };

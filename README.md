@@ -80,7 +80,7 @@ npm run dev               # http://localhost:5173
 **2. Backend – Render.** Easiest: New → Blueprint → pick the repo (uses `render.yaml`). Or New → Web Service manually:
 - Root directory: `backend`, build `npm install`, start `npm start`, health check `/api/health`
 - Env vars (see `backend/.env.production.example`): `NODE_ENV=production`, `MONGO_URI`, `JWT_SECRET`, `CLIENT_URL` (your Vercel URL, no trailing slash). `PORT` is set by Render.
-- **Email (required, sends verify/reset codes):** Render's free tier blocks SMTP, so use Brevo's HTTP API. Create a free Brevo account, verify a sender, then set `BREVO_API_KEY` and `MAIL_FROM` (`Expense Tracker <verified@address>`). SMTP_* still works locally or on paid plans.
+- **Email (required, sends the register/reset OTP codes):** Render's free tier blocks SMTP, so mail goes through a free Google Apps Script that sends from your Gmail. Open script.google.com, create a project, paste `backend/mail-relay/Code.gs`, set `SECRET` to a long random string, then Deploy → New deployment → Web app (Execute as *Me*, access *Anyone*) and copy the URL. Set `MAIL_RELAY_URL` to that URL and `MAIL_RELAY_SECRET` to the same secret. (Gmail limit is about 100 emails/day on free accounts.) SMTP_* still works locally or on paid plans.
 - **Profile photos:** Render's free disk is wiped on every deploy, so set `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` (free Cloudinary account). If unset, images are saved to `backend/uploads` (fine locally, lost on Render).
 
 **3. Frontend – Vercel.** New Project → import the repo.
