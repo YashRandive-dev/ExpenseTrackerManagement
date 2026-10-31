@@ -4,6 +4,7 @@ const User = require("../models/User");
 const Session = require("../models/Session");
 const { issueOtp, verifyOtp, OtpError } = require("../utils/otp");
 const { parseDevice } = require("../utils/device");
+const cloudinary = require("../utils/cloudinary");
 
 const CURRENCIES = ["USD", "EUR", "GBP", "INR", "JPY", "CNY", "AUD", "CAD", "CHF", "SGD", "AED", "SAR", "ZAR", "BRL", "MXN", "KRW", "NZD", "SEK", "NOK", "TRY", "RUB", "IDR", "PHP", "THB", "MYR", "PKR", "BDT", "LKR", "NGN", "KES", "EGP"];
 
@@ -259,10 +260,18 @@ exports.revokeOtherSessions = async (req, res) => {
 };
 
 // POST /api/v1/auth/upload-image
-exports.uploadImage = (req, res) => {
+exports.uploadImage = async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: "No file uploaded" });
   }
-  const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
-  res.status(200).json({ imageUrl });
+  try {
+    if (cloudinary.isConfigured()) {
+      return res.status(200).json({ imageUrl: await cloudinary.uploadImage(req.file) });
+    }
+    const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+    res.status(200).json({ imageUrl });
+  } catch (err) {
+    console.error("Image upload failed:", err.message);
+    res.status(502).json({ message: "Could not upload the image. Please try again." });
+  }
 };

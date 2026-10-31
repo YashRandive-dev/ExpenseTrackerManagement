@@ -77,13 +77,11 @@ npm run dev               # http://localhost:5173
 
 **1. Database – MongoDB Atlas.** In *Network Access* allow `0.0.0.0/0` (Render IPs are dynamic). Use the same `MONGO_URI`.
 
-**2. Backend – Render.** New → Web Service → connect the repo.
-- Root directory: `backend`
-- Build command: `npm install`
-- Start command: `npm start`
-- Env vars (see `backend/.env.production.example`): `NODE_ENV=production`, `MONGO_URI`, `JWT_SECRET`, `CLIENT_URL` (your Vercel URL, no trailing slash), and the SMTP settings `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`. SMTP is required: it sends the email-verification and password-reset codes. `PORT` is set by Render.
-
-> Render's free disk is ephemeral: uploaded profile photos disappear on redeploy/restart. For production, attach a Render Disk mounted at `backend/uploads`, or switch `uploadMiddleware.js` to Cloudinary/S3.
+**2. Backend – Render.** Easiest: New → Blueprint → pick the repo (uses `render.yaml`). Or New → Web Service manually:
+- Root directory: `backend`, build `npm install`, start `npm start`, health check `/api/health`
+- Env vars (see `backend/.env.production.example`): `NODE_ENV=production`, `MONGO_URI`, `JWT_SECRET`, `CLIENT_URL` (your Vercel URL, no trailing slash). `PORT` is set by Render.
+- **Email (required, sends verify/reset codes):** Render's free tier blocks SMTP, so use Brevo's HTTP API. Create a free Brevo account, verify a sender, then set `BREVO_API_KEY` and `MAIL_FROM` (`Expense Tracker <verified@address>`). SMTP_* still works locally or on paid plans.
+- **Profile photos:** Render's free disk is wiped on every deploy, so set `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` (free Cloudinary account). If unset, images are saved to `backend/uploads` (fine locally, lost on Render).
 
 **3. Frontend – Vercel.** New Project → import the repo.
 - Root directory: `frontend`, framework preset: Vite

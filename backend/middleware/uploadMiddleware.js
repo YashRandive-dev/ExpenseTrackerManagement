@@ -3,9 +3,11 @@ const path = require("path");
 const fs = require("fs");
 
 const uploadDir = path.join(__dirname, "..", "uploads");
-fs.mkdirSync(uploadDir, { recursive: true });
+const useCloud = require("../utils/cloudinary").isConfigured();
+if (!useCloud) fs.mkdirSync(uploadDir, { recursive: true });
 
-const storage = multer.diskStorage({
+// Cloudinary: keep the file in memory and stream it up. Otherwise (local dev) write to ./uploads.
+const storage = useCloud ? multer.memoryStorage() : multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadDir),
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();

@@ -1,0 +1,29 @@
+# Render Blueprint: New + > Blueprint > pick this repo. Secrets (sync: false) are asked for in the dashboard.
+services:
+  - type: web
+    name: expense-tracker-api
+    runtime: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CLIENT_URL        # your exact Vercel URL, no trailing slash
+        sync: false
+      - key: BREVO_API_KEY     # OTP emails (Render free tier blocks SMTP)
+        sync: false
+      - key: MAIL_FROM         # sender verified in Brevo, e.g. Expense Tracker <you@gmail.com>
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
