@@ -1,6 +1,8 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
 const path = require("path");
 const connectDB = require("./config/db");
 
@@ -11,6 +13,22 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 
 const app = express();
 app.set("trust proxy", 1); // correct https URLs behind Render's proxy
+app.disable("x-powered-by");
+// the frontend lives on another origin and loads /uploads images, so allow cross-origin resource loads
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
+
+// baseline per-IP limit for the whole API (stricter limits sit on the auth routes)
+app.use(
+  "/api",
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 600,
+    standardHeaders: "draft-7",
+    legacyHeaders: false,
+    skip: (req) => req.path === "/health",
+    message: { message: "Too many requests. Please try again later." },
+  })
+);
 
 const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173")
   .split(",")

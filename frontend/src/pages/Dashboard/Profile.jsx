@@ -4,11 +4,12 @@ import { FiLogOut, FiMonitor, FiSmartphone } from "react-icons/fi";
 import toast from "react-hot-toast";
 import Avatar from "../../components/common/Avatar";
 import Input from "../../components/inputs/Input";
+import CurrencySelect from "../../components/inputs/CurrencySelect";
 import Spinner from "../../components/common/Spinner";
 import { UserContext } from "../../context/UserContext";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATHS } from "../../utils/apiPaths";
-import { CURRENCIES, getCurrencyName, getErrorMessage } from "../../utils/helper";
+import { getErrorMessage } from "../../utils/helper";
 
 const fmt = (d) => new Date(d).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 
@@ -63,19 +64,12 @@ const ProfileCard = () => {
         </label>
       </div>
       <Input label="Full Name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
-      <label className="block">
-        <span className="mb-1.5 block text-xs font-medium text-muted">Currency</span>
-        <select value={currency} onChange={(e) => setCurrency(e.target.value)} className="field">
-          {CURRENCIES.map((c) => (
-            <option key={c} value={c} className="bg-[#161834] text-white">
-              {c} - {getCurrencyName(c)}
-            </option>
-          ))}
-        </select>
-        <span className="mt-1 block text-xs text-muted">
-          Only changes how amounts are displayed; existing amounts are not converted.
-        </span>
-      </label>
+      <CurrencySelect
+        label="Currency"
+        value={currency}
+        onChange={setCurrency}
+        hint="Only changes how amounts are displayed; existing amounts are not converted."
+      />
       <div>
         <span className="mb-1.5 block text-xs font-medium text-muted">Email</span>
         <p className="field opacity-70">
