@@ -93,3 +93,4 @@ Then go back to Render and make sure `CLIENT_URL` equals the final Vercel domain
 ## Notes
 - Currency is set in `frontend/src/utils/helper.js` (`CURRENCY`, `LOCALE`).
 - JWTs last 7 days and are stored in `localStorage`; a 401 from the API logs the user out.
+# ExpenseTrackerManagement
