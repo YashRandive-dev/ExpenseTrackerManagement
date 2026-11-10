@@ -15,11 +15,14 @@ exports.protect = async (req, res, next) => {
     if (!decoded.sid) throw new Error("legacy token");
 
     // a token is only valid while its device session exists (logout / remote sign-out deletes it)
-    const session = await Session.findOne({ _id: decoded.sid, user: decoded.id });
+    // fetched in parallel: one DB round trip instead of two
+    const [session, user] = await Promise.all([
+      Session.findOne({ _id: decoded.sid, user: decoded.id }),
+      User.findById(decoded.id).select("-password"),
+    ]);
     if (!session) {
       return res.status(401).json({ message: "Session ended. Please log in again." });
     }
-    const user = await User.findById(decoded.id).select("-password");
     if (!user) {
       return res.status(401).json({ message: "Not authorized, user not found" });
     }

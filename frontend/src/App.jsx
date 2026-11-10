@@ -1,15 +1,16 @@
+import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import Blobs from "./components/common/Blobs";
-import DashboardLayout from "./components/layouts/DashboardLayout";
+const DashboardLayout = lazy(() => import("./components/layouts/DashboardLayout"));
 import Login from "./pages/Auth/Login";
 import SignUp from "./pages/Auth/SignUp";
 import VerifyEmail from "./pages/Auth/VerifyEmail";
 import ForgotPassword from "./pages/Auth/ForgotPassword";
-import Profile from "./pages/Dashboard/Profile";
-import Home from "./pages/Dashboard/Home";
-import Income from "./pages/Dashboard/Income";
-import Expense from "./pages/Dashboard/Expense";
+const Profile = lazy(() => import("./pages/Dashboard/Profile"));
+const Home = lazy(() => import("./pages/Dashboard/Home"));
+const Income = lazy(() => import("./pages/Dashboard/Income"));
+const Expense = lazy(() => import("./pages/Dashboard/Expense"));
 
 const Root = () => {
   const authed = !!localStorage.getItem("token");
@@ -19,6 +20,7 @@ const Root = () => {
 const App = () => (
   <>
     <Blobs />
+    <Suspense fallback={null}>
     <Routes>
       <Route path="/" element={<Root />} />
       <Route path="/login" element={<Login />} />
@@ -35,6 +37,7 @@ const App = () => (
 
       <Route path="*" element={<Root />} />
     </Routes>
+    </Suspense>
 
     <Toaster
       position="top-right"
